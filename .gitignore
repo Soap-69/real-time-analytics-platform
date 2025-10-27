@@ -1,0 +1,20 @@
+# Java / Maven / Gradle / IDE
+**/target/
+**/build/
+**/*.iml
+.idea/
+.project
+.classpath
+.settings/
+.DS_Store
+
+# Python
+**/__pycache__/
+**/.venv/
+**/.pytest_cache/
+**/.mypy_cache/
+
+# OS / Misc
+*.log
+.env
+.env.*
