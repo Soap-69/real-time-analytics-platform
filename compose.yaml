@@ -49,7 +49,8 @@ services:
       DB_NAME: analytics
       DB_USER: postgres
       DB_PASSWORD: postgres
-    command: ["python","-m","app.main"]
+      PYTHONUNBUFFERED: "1"        # ← add this
+    command: ["python","-u","-m","app.main"]   # ← add -u
 
 volumes:
   pgdata:
