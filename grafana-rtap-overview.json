@@ -1,0 +1,64 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "API requests (rate)",
+      "targets": [
+        {
+          "expr": "sum by (uri,method,status) (rate(http_server_requests_seconds_count[1m]))",
+          "legendFormat": "{{uri}} {{method}} {{status}}"
+        }
+      ],
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ETL OK (last minute)",
+      "targets": [
+        {
+          "expr": "max_over_time(rtap_etl_last_run_ok[1m])"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Events raw count",
+      "targets": [
+        {
+          "expr": "rtap_events_raw_count"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "title": "RTAP Overview",
+  "version": 1
+}
