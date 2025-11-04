@@ -25,3 +25,7 @@ management:
     metrics:
       export:
         enabled: true
+rtap:
+  jwt:
+    secret: dev-super-secret-change-me-32-plus
+    ttlSeconds: 86400
