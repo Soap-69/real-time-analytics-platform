@@ -31,9 +31,14 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/analytics
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      RTAP_JWT_SECRET: "Qy9vXo2mGk7hUnb1cR3Yp6Zs8JtLwN2qF5aD8sK1rV4xE7mB0pH3uW9yT2zC6a"  # 64 chars
+      RTAP_JWT_TTLSECONDS: "86400"
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: "6379"
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
       SPRING_JPA_SHOW_SQL: "false"
       SPRING_PROFILES_ACTIVE: docker
+
     ports:
       - "8080:8080"
 

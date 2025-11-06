@@ -8,6 +8,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -17,6 +20,12 @@ public class SecurityConfig {
 
     @Value("${rtap.jwt.ttlSeconds:86400}")
     private long ttlSeconds;
+
+    @Bean
+    public RateLimitFilter rateLimitFilter(StringRedisTemplate redis, MeterRegistry meterRegistry) {
+        // 60 requests/min per IP; adjust if needed
+        return new RateLimitFilter(redis, meterRegistry, 60);
+    }
 
     @Bean
     public JwtUtil jwtUtil() {

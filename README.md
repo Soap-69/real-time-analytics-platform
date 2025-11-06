@@ -20,5 +20,3 @@ Then test:
 - Add `/api/v1/events` POST endpoint
 - Expand pipeline to aggregate daily metrics
 - Add Prometheus + Grafana
-
-//Birthday push yeeeeeeea! use this project to celebrate my bd!

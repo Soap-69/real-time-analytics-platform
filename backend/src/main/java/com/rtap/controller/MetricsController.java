@@ -5,6 +5,7 @@ import com.rtap.repository.MetricsDailyRepository;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +20,8 @@ public class MetricsController {
     public MetricsController(MetricsDailyRepository repo) {
         this.repo = repo;
     }
-
+    @Cacheable(cacheNames = "metricsDaily",
+            key = "#name + ':' + #from.toString() + ':' + #to.toString()")
     @GetMapping("/daily")
     public ResponseEntity<?> getDaily(
             @RequestParam String name,
