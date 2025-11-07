@@ -64,6 +64,7 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
     ports:
       - "9090:9090"
     depends_on:
@@ -78,6 +79,11 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_DEFAULT_THEME=light
+    volumes:
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana-rtap-overview.json:/etc/grafana/dashboards/rtap-overview.json:ro
     depends_on:
       - prometheus
 
