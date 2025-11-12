@@ -14,6 +14,10 @@
 **/.pytest_cache/
 **/.mypy_cache/
 
+# Docker
+**/.env
+.env.local
+
 # OS / Misc
 *.log
 .env
