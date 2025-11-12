@@ -30,6 +30,12 @@ management:
     metrics:
       export:
         enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
 rtap:
   jwt:
     secret: dev-super-secret-change-me-32-plus
