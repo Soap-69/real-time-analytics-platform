@@ -20,8 +20,8 @@ public class MetricsController {
     public MetricsController(MetricsDailyRepository repo) {
         this.repo = repo;
     }
-    @Cacheable(cacheNames = "metricsDaily",
-            key = "#name + ':' + #from.toString() + ':' + #to.toString()")
+   /* @Cacheable(cacheNames = "metricsDaily",
+            key = "#name + ':' + #from.toString() + ':' + #to.toString()")*/
     @GetMapping("/daily")
     public ResponseEntity<?> getDaily(
             @RequestParam String name,
