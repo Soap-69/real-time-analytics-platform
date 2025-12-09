@@ -24,23 +24,48 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: rtap-backend
+
     depends_on:
       - postgres
       - redis
+
     environment:
+      # === DATABASE ===
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/analytics
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      RTAP_JWT_SECRET: "Qy9vXo2mGk7hUnb1cR3Yp6Zs8JtLwN2qF5aD8sK1rV4xE7mB0pH3uW9yT2zC6a"  # 64 chars
+
+      # === JWT CONFIG ===
+      # Matches @Value("${rtap.jwt.secret}") and @Value("${rtap.jwt.ttlSeconds}")
+      RTAP_JWT_SECRET: "Qy9vXo2mGk7hUnb1cR3Yp6Zs8JtLwN2qF5aD8sK1rV4xE7mB0pH3uW9yT2zC6a"
       RTAP_JWT_TTLSECONDS: "86400"
+
+      # === REDIS ===
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: "6379"
+
+      # === JPA ===
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
       SPRING_JPA_SHOW_SQL: "false"
+
+      # === SPRING PROFILE ===
       SPRING_PROFILES_ACTIVE: docker
 
     ports:
       - "8080:8080"
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        # This is what the frontend will use to call the backend *inside Docker*
+        - VITE_API_BASE=http://localhost:8080
+    container_name: rtap-web
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
 
   pipeline:
     build:

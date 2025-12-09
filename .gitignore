@@ -22,3 +22,8 @@
 *.log
 .env
 .env.*
+
+# frontend env
+web/.env*
+# backend env
+backend/.env*

@@ -1,7 +1,7 @@
 // Read base URL from Vite env vars
 // This MUST match web/.env → VITE_API_BASE=http://localhost:8080
 export const API_BASE =
-    import.meta.env.VITE_API_BASE || "http://localhost:8080";
+    import.meta.env.VITE_API_BASE?.trim() || '/api';
 
 // ---- Fetch Daily Metrics ----
 
