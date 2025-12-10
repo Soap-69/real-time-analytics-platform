@@ -1,375 +1,345 @@
-import { useEffect, useState } from "react";
+// src/App.jsx
+import React, { useEffect, useState } from "react";
+import { fetchDailyMetrics } from "./lib/api";
+import {
+    LineChart,
+    Line,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+} from "recharts";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8080";
-const TOKEN = import.meta.env.VITE_API_TOKEN || "";
+const METRICS = [
+    { id: "DAU", label: "DAU (Daily Active Users)" },
+    { id: "EVENTS_TOTAL", label: "Events Total" },
+];
 
-// Helper: format Date → yyyy-mm-dd
-function formatDate(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+function formatDateInput(date) {
+    return date.toISOString().slice(0, 10);
 }
 
-// Default range: last 7 days (including today)
-const today = new Date();
-const defaultTo = formatDate(today);
-const defaultFrom = formatDate(new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000));
+function addDays(date, n) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+}
 
 export default function App() {
-    const [metricName, setMetricName] = useState("DAU");
-    const [fromDate, setFromDate] = useState(defaultFrom);
-    const [toDate, setToDate] = useState(defaultTo);
-
+    // state
+    const [metric, setMetric] = useState("DAU");
+    const [fromDate, setFromDate] = useState(
+        formatDateInput(addDays(new Date(), -6))
+    );
+    const [toDate, setToDate] = useState(formatDateInput(new Date()));
+    const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [points, setPoints] = useState([]);
 
-    // Derived info for the summary cards
-    const daysCount = points.length;
+    // derived
+    const daysCount = data.length;
 
-    async function loadMetrics(selectedMetric, from, to) {
-        setLoading(true);
-        setError("");
+    // initial load
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
+    async function load(e) {
+        if (e) e.preventDefault();
         try {
-            const params = new URLSearchParams({
-                name: selectedMetric,
-                from,
-                to,
-            });
-
-            const res = await fetch(
-                `${API_BASE}/api/v1/metrics/daily?${params.toString()}`,
-                {
-                    headers: {
-                        Authorization: TOKEN ? `Bearer ${TOKEN}` : "",
-                    },
-                }
-            );
-
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(`Metrics fetch failed: ${res.status} ${text}`);
-            }
-
-            const data = await res.json();
-            // Backend returns: { name, from, to, points:[ {date,value}, ...] }
-            setPoints(data.points || []);
-        } catch (e) {
-            console.error(e);
-            setError(e.message || "Unknown error");
-            setPoints([]);
+            setLoading(true);
+            setError("");
+            const metrics = await fetchDailyMetrics(metric, fromDate, toDate);
+            setData(metrics);
+        } catch (err) {
+            console.error(err);
+            setError(err.message || "Failed to fetch metrics");
+            setData([]);
         } finally {
             setLoading(false);
         }
     }
 
-    // Initial load on page open
-    useEffect(() => {
-        loadMetrics(metricName, fromDate, toDate);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    function handleSubmit(e) {
-        e.preventDefault();
-        loadMetrics(metricName, fromDate, toDate);
-    }
-
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "grid",
-                gridTemplateColumns: "280px 1fr",
-                background: "#050712",
-                color: "#f9fafb",
-                fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-            }}
-        >
+        <div className="min-h-screen flex bg-rtap-bg text-slate-100">
             {/* Sidebar */}
-            <aside
-                style={{
-                    borderRight: "1px solid #111827",
-                    padding: "1.5rem 1.5rem 2rem",
-                    background: "#050712",
-                }}
-            >
-                <h1 style={{ fontSize: "1.6rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-                    RTAP Dashboard
-                </h1>
-                <p style={{ fontSize: "0.9rem", color: "#9ca3af", marginBottom: "2rem" }}>
-                    Real-Time Analytics Platform · Frontend
-                </p>
-
-                <div
-                    style={{
-                        display: "grid",
-                        gap: "1rem",
-                    }}
-                >
-                    {/* Metric card */}
-                    <div
-                        style={{
-                            background: "#0b1020",
-                            borderRadius: "0.75rem",
-                            padding: "1rem 1.2rem",
-                            boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
-                        }}
-                    >
-                        <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginBottom: "0.4rem" }}>
-                            Metric
-                        </div>
-                        <div style={{ fontSize: "1.2rem", fontWeight: 600 }}>{metricName}</div>
+            <aside className="hidden md:flex w-64 flex-col border-r border-rtap-border bg-gradient-to-b from-slate-950 to-slate-900">
+                <div className="px-6 py-6 flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-rtap-accent/90 flex items-center justify-center text-xl font-bold">
+                        R
                     </div>
-
-                    {/* Range card */}
-                    <div
-                        style={{
-                            background: "#0b1020",
-                            borderRadius: "0.75rem",
-                            padding: "1rem 1.2rem",
-                            boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
-                        }}
-                    >
-                        <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginBottom: "0.4rem" }}>
-                            Range
+                    <div>
+                        <div className="font-semibold tracking-tight">
+                            RTAP Dashboard
                         </div>
-                        <div style={{ fontSize: "1rem", fontWeight: 500 }}>
-                            {fromDate} → {toDate}
+                        <div className="text-xs text-slate-400">
+                            Real-Time Analytics Platform
                         </div>
                     </div>
+                </div>
 
-                    {/* Days count */}
-                    <div
-                        style={{
-                            background: "#0b1020",
-                            borderRadius: "0.75rem",
-                            padding: "1rem 1.2rem",
-                            boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
-                        }}
-                    >
-                        <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginBottom: "0.4rem" }}>
-                            Days Count
-                        </div>
-                        <div style={{ fontSize: "1.2rem", fontWeight: 600 }}>{daysCount}</div>
-                    </div>
+                <nav className="mt-4 flex-1 space-y-1 px-3 text-sm">
+                    <SidebarItem active label="Overview" icon="📊" />
+                    <SidebarItem label="Events" icon="📦" />
+                    <SidebarItem label="Users" icon="👤" />
+                    <SidebarItem label="Settings" icon="⚙️" />
+                </nav>
+
+                <div className="px-4 py-4 border-t border-rtap-border text-xs text-slate-500">
+                    © {new Date().getFullYear()} RTAP
                 </div>
             </aside>
 
-            {/* Main content */}
-            <main style={{ padding: "1.5rem 2rem" }}>
-                {/* Filters */}
-                <form
-                    onSubmit={handleSubmit}
-                    style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: "1rem",
-                        alignItems: "flex-end",
-                        marginBottom: "1.5rem",
-                    }}
-                >
-                    {/* Metric select */}
-                    <div style={{ minWidth: "150px" }}>
-                        <label
-                            style={{
-                                display: "block",
-                                fontSize: "0.8rem",
-                                color: "#9ca3af",
-                                marginBottom: "0.25rem",
-                            }}
-                        >
-                            Metric
-                        </label>
-                        <select
-                            value={metricName}
-                            onChange={(e) => setMetricName(e.target.value)}
-                            style={{
-                                width: "100%",
-                                padding: "0.5rem 0.75rem",
-                                borderRadius: "0.5rem",
-                                border: "1px solid #1f2937",
-                                background: "#020617",
-                                color: "#f9fafb",
-                            }}
-                        >
-                            <option value="DAU">DAU (Daily Active Users)</option>
-                            <option value="EVENTS_TOTAL">EVENTS_TOTAL (All events)</option>
-                        </select>
-                    </div>
-
-                    {/* From date */}
+            {/* Main */}
+            <div className="flex-1 flex flex-col">
+                {/* Top bar */}
+                <header className="border-b border-rtap-border px-4 md:px-6 h-16 flex items-center justify-between bg-slate-950/80 backdrop-blur">
                     <div>
-                        <label
-                            style={{
-                                display: "block",
-                                fontSize: "0.8rem",
-                                color: "#9ca3af",
-                                marginBottom: "0.25rem",
-                            }}
-                        >
-                            From
-                        </label>
-                        <input
-                            type="date"
-                            value={fromDate}
-                            max={toDate}
-                            onChange={(e) => setFromDate(e.target.value)}
-                            style={{
-                                padding: "0.5rem 0.75rem",
-                                borderRadius: "0.5rem",
-                                border: "1px solid #1f2937",
-                                background: "#020617",
-                                color: "#f9fafb",
-                            }}
+                        <h1 className="text-lg font-semibold">Overview</h1>
+                        <p className="text-xs text-slate-400">
+                            See key metrics for your platform.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="text-right text-xs">
+                            <div className="font-medium">Yi Sun</div>
+                            <div className="text-slate-400">Owner · RTAP</div>
+                        </div>
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-rtap-accent to-indigo-300 flex items-center justify-center text-xs font-semibold">
+                            YS
+                        </div>
+                    </div>
+                </header>
+
+                {/* Content */}
+                <main className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-6">
+                    {/* Filters row */}
+                    <section className="flex flex-col md:flex-row gap-4 md:items-end">
+                        {/* Metric selector */}
+                        <div className="flex-1 max-w-xs">
+                            <label className="block text-xs font-medium text-slate-400 mb-1">
+                                Metric
+                            </label>
+                            <select
+                                className="w-full rounded-md border border-rtap-border bg-slate-900/80 px-3 py-2 text-sm outline-none ring-rtap-accent focus:ring-1"
+                                value={metric}
+                                onChange={(e) => setMetric(e.target.value)}
+                            >
+                                {METRICS.map((m) => (
+                                    <option key={m.id} value={m.id}>
+                                        {m.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Date range */}
+                        <div className="flex-1 flex flex-col md:flex-row gap-4">
+                            <DateField
+                                label="From"
+                                value={fromDate}
+                                onChange={setFromDate}
+                            />
+                            <DateField
+                                label="To"
+                                value={toDate}
+                                onChange={setToDate}
+                            />
+                        </div>
+
+                        {/* Apply button */}
+                        <div className="md:ml-auto">
+                            <button
+                                onClick={load}
+                                className="inline-flex items-center justify-center rounded-md bg-rtap-accent px-4 py-2 text-sm font-medium shadow-sm hover:bg-indigo-500 transition-colors"
+                            >
+                                {loading ? "Loading…" : "Apply filters"}
+                            </button>
+                        </div>
+                    </section>
+
+                    {/* Error banner */}
+                    {error && (
+                        <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Summary cards */}
+                    <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <SummaryCard
+                            title="Metric"
+                            value={METRICS.find((m) => m.id === metric)?.id || metric}
                         />
-                    </div>
-
-                    {/* To date */}
-                    <div>
-                        <label
-                            style={{
-                                display: "block",
-                                fontSize: "0.8rem",
-                                color: "#9ca3af",
-                                marginBottom: "0.25rem",
-                            }}
-                        >
-                            To
-                        </label>
-                        <input
-                            type="date"
-                            value={toDate}
-                            min={fromDate}
-                            max={defaultTo}
-                            onChange={(e) => setToDate(e.target.value)}
-                            style={{
-                                padding: "0.5rem 0.75rem",
-                                borderRadius: "0.5rem",
-                                border: "1px solid #1f2937",
-                                background: "#020617",
-                                color: "#f9fafb",
-                            }}
+                        <SummaryCard
+                            title="Range"
+                            value={`${fromDate} → ${toDate}`}
                         />
-                    </div>
+                        <SummaryCard title="Days Count" value={daysCount} />
+                    </section>
 
-                    {/* Submit button */}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            padding: "0.6rem 1rem",
-                            borderRadius: "0.5rem",
-                            border: "none",
-                            background: loading ? "#4b5563" : "#6366f1",
-                            color: "white",
-                            fontWeight: 600,
-                            cursor: loading ? "default" : "pointer",
-                        }}
-                    >
-                        {loading ? "Loading…" : "Apply filters"}
-                    </button>
-                </form>
-
-                {/* Error message */}
-                {error && (
-                    <div
-                        style={{
-                            marginBottom: "1rem",
-                            padding: "0.75rem 1rem",
-                            borderRadius: "0.5rem",
-                            background: "#7f1d1d",
-                            color: "#fee2e2",
-                            fontSize: "0.9rem",
-                        }}
-                    >
-                        Error: {error}
-                    </div>
-                )}
-
-                {/* Table */}
-                <section>
-                    <h2 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "0.75rem" }}>
-                        Daily values ({metricName})
-                    </h2>
-
-                    <div
-                        style={{
-                            borderRadius: "0.75rem",
-                            overflow: "hidden",
-                            border: "1px solid #111827",
-                            background: "#020617",
-                        }}
-                    >
-                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
-                            <thead style={{ background: "#020617" }}>
-                            <tr>
-                                <th
-                                    style={{
-                                        textAlign: "left",
-                                        padding: "0.6rem 0.9rem",
-                                        borderBottom: "1px solid #111827",
-                                        color: "#9ca3af",
-                                        fontWeight: 500,
-                                    }}
-                                >
-                                    Date
-                                </th>
-                                <th
-                                    style={{
-                                        textAlign: "left",
-                                        padding: "0.6rem 0.9rem",
-                                        borderBottom: "1px solid #111827",
-                                        color: "#9ca3af",
-                                        fontWeight: 500,
-                                    }}
-                                >
-                                    Value
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {points.length === 0 ? (
-                                <tr>
-                                    <td
-                                        colSpan={2}
-                                        style={{
-                                            padding: "0.75rem 0.9rem",
-                                            color: "#6b7280",
-                                            fontStyle: "italic",
-                                        }}
-                                    >
+                    {/* Chart + table */}
+                    <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        {/* Line chart */}
+                        <div className="lg:col-span-2 rounded-xl border border-rtap-border bg-slate-950/60 p-4 md:p-5">
+                            <div className="flex items-center justify-between mb-3">
+                                <h2 className="text-sm font-semibold">
+                                    {METRICS.find((m) => m.id === metric)?.label ||
+                                        metric}
+                                </h2>
+                                <span className="text-xs text-slate-500">
+                  Daily values
+                </span>
+                            </div>
+                            <div className="h-64">
+                                {loading ? (
+                                    <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                                        Loading…
+                                    </div>
+                                ) : data.length === 0 ? (
+                                    <div className="h-full flex items-center justify-center text-xs text-slate-500">
                                         No data for this range.
-                                    </td>
-                                </tr>
-                            ) : (
-                                points.map((p) => (
-                                    <tr key={p.date}>
-                                        <td
-                                            style={{
-                                                padding: "0.55rem 0.9rem",
-                                                borderBottom: "1px solid #111827",
-                                            }}
-                                        >
-                                            {p.date}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: "0.55rem 0.9rem",
-                                                borderBottom: "1px solid #111827",
-                                            }}
-                                        >
-                                            {p.value}
-                                        </td>
+                                    </div>
+                                ) : (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={data}>
+                                            <CartesianGrid
+                                                strokeDasharray="3 3"
+                                                stroke="#1f2937"
+                                            />
+                                            <XAxis
+                                                dataKey="date"
+                                                tick={{ fontSize: 11, fill: "#9ca3af" }}
+                                            />
+                                            <YAxis
+                                                tick={{ fontSize: 11, fill: "#9ca3af" }}
+                                                width={60}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: "#020617",
+                                                    border: "1px solid #1f2937",
+                                                    fontSize: 12,
+                                                }}
+                                            />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="value"
+                                                stroke="#6366f1"
+                                                strokeWidth={2}
+                                                dot={{ r: 3 }}
+                                                activeDot={{ r: 5 }}
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Table */}
+                        <div className="rounded-xl border border-rtap-border bg-slate-950/60 p-4 md:p-5">
+                            <h2 className="text-sm font-semibold mb-3">
+                                Daily values ({metric})
+                            </h2>
+                            <div className="border border-rtap-border rounded-lg overflow-hidden text-xs">
+                                <table className="min-w-full border-collapse">
+                                    <thead className="bg-slate-900/80">
+                                    <tr className="text-left">
+                                        <th className="px-3 py-2 border-b border-rtap-border">
+                                            Date
+                                        </th>
+                                        <th className="px-3 py-2 border-b border-rtap-border text-right">
+                                            Value
+                                        </th>
                                     </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            </main>
+                                    </thead>
+                                    <tbody>
+                                    {loading ? (
+                                        <tr>
+                                            <td
+                                                colSpan={2}
+                                                className="px-3 py-4 text-center text-slate-400"
+                                            >
+                                                Loading…
+                                            </td>
+                                        </tr>
+                                    ) : data.length === 0 ? (
+                                        <tr>
+                                            <td
+                                                colSpan={2}
+                                                className="px-3 py-4 text-center text-slate-500"
+                                            >
+                                                No data.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        data.map((row) => (
+                                            <tr
+                                                key={row.date}
+                                                className="odd:bg-slate-900/40"
+                                            >
+                                                <td className="px-3 py-2 border-b border-rtap-border/60">
+                                                    {row.date}
+                                                </td>
+                                                <td className="px-3 py-2 border-b border-rtap-border/60 text-right">
+                                                    {row.value}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </div>
+    );
+}
+
+/* Small UI helpers */
+
+function SidebarItem({ label, icon, active }) {
+    return (
+        <button
+            className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-left transition-colors ${
+                active
+                    ? "bg-slate-800 text-slate-50"
+                    : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
+            }`}
+            type="button"
+        >
+            <span className="text-base">{icon}</span>
+            <span>{label}</span>
+        </button>
+    );
+}
+
+function SummaryCard({ title, value }) {
+    return (
+        <div className="rounded-xl border border-rtap-border bg-slate-950/60 px-4 py-3">
+            <div className="text-xs text-slate-400 mb-1">{title}</div>
+            <div className="text-lg font-semibold">{value}</div>
+        </div>
+    );
+}
+
+function DateField({ label, value, onChange }) {
+    return (
+        <div className="flex-1">
+            <label className="block text-xs font-medium text-slate-400 mb-1">
+                {label}
+            </label>
+            <input
+                type="date"
+                className="w-full rounded-md border border-rtap-border bg-slate-900/80 px-3 py-2 text-sm outline-none ring-rtap-accent focus:ring-1"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+            />
         </div>
     );
 }

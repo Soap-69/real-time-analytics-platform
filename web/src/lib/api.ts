@@ -1,54 +1,62 @@
-// Read base URL from Vite env vars
-// This MUST match web/.env → VITE_API_BASE=http://localhost:8080
-export const API_BASE =
-    import.meta.env.VITE_API_BASE?.trim() || '/api';
+// src/lib/api.ts
 
-// ---- Fetch Daily Metrics ----
+// Base URL (from env or fallback)
+const API_BASE: string =
+    import.meta.env.VITE_API_BASE || "http://localhost:8080";
 
-export async function fetchDailyMetrics(
-    name: string,
-    from: string,
-    to: string
-) {
+export interface MetricRow {
+    metricDate?: string;
+    metricValue?: number;
+    date?: string;
+    value?: number;
+}
+
+/** Type definitions */
+export interface DailyMetricRow {
+    metricDate: string;
+    metricValue: number;
+}
+
+export interface DailyMetric {
+    date: string;
+    value: number;
+}
+
+/**
+ * Fetch daily metrics from backend.
+ * Backend endpoint: GET /api/v1/metrics/daily?name=...&from=YYYY-MM-DD&to=YYYY-MM-DD
+ */
+export async function fetchDailyMetrics(name: string, from: string, to: string) {
     const url = `${API_BASE}/api/v1/metrics/daily?name=${encodeURIComponent(
         name
     )}&from=${from}&to=${to}`;
 
-    console.log("Requesting:", url);
-
-    const token = localStorage.getItem("rtap_token") ?? "";
-
-    const res = await fetch(url, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const res = await fetch(url);
 
     if (!res.ok) {
-        const errorBody = await res.text();
+        const text = await res.text();
         throw new Error(
-            `Metrics fetch failed: ${res.status} — ${errorBody}`
+            `Metrics fetch failed: ${res.status} ${res.statusText} – ${text}`
         );
     }
 
-    return res.json();
-}
+    const json = await res.json();
 
-// ---- Fetch Current JWT Token (login demo user) ----
-
-export async function loginDemoUser() {
-    const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            username: "demo",
-            password: "demo123"
-        }),
-    });
-
-    if (!res.ok) {
-        throw new Error("Failed to login demo user");
+    // CASE 1: backend returns array directly
+    if (Array.isArray(json)) {
+        return json.map((row: MetricRow) => ({
+            date: row.metricDate ?? row.date,
+            value: row.metricValue ?? row.value,
+        }));
     }
 
-    return res.json();
+    // CASE 2: backend returns object with "points"
+    if (json.points && Array.isArray(json.points)) {
+        return json.points.map((row: MetricRow) => ({
+            date: row.metricDate ?? row.date,
+            value: row.metricValue ?? row.value,
+        }));
+    }
+
+    return [];
 }

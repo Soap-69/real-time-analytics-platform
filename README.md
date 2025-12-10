@@ -1,5 +1,8 @@
-# Real-Time Event Analytics Platform (Starter)
+# 🚀 Real-Time Event Analytics Platform (RTAP)
 Minimal starter to get the stack running: Postgres, Redis, Spring Boot backend, and a tiny Python pipeline.
+
+# 📸 Dashboard UI Preview
+![RTAP Dashboard UI](./docs/ui-overview.png)
 
 ## Prereqs
 - Docker Desktop (Windows/Mac) or Docker Engine (Linux)
