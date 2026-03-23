@@ -9,10 +9,10 @@ export default function SidebarItem({ label, icon, to }) {
     return (
         <Link
             to={to}
-            className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-left transition-colors ${
+            className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors ${
                 active
-                    ? "bg-slate-800 text-slate-50"
-                    : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
+                    ? "bg-indigo-50 text-rtap-accent font-medium"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
             }`}
         >
             <span className="text-base">{icon}</span>

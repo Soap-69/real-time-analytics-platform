@@ -24,8 +24,8 @@ describe('LoginPage', () => {
 
     it('renders username and password fields', () => {
         renderLogin();
-        expect(screen.getByPlaceholderText('Username')).toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Enter your username')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Enter your password')).toBeInTheDocument();
     });
 
     it('calls login() with entered credentials and saves token on success', async () => {
@@ -33,8 +33,8 @@ describe('LoginPage', () => {
         const user = userEvent.setup();
         renderLogin();
 
-        await user.type(screen.getByPlaceholderText('Username'), 'Esun');
-        await user.type(screen.getByPlaceholderText('Password'), 'Esunadmin');
+        await user.type(screen.getByPlaceholderText('Enter your username'), 'Esun');
+        await user.type(screen.getByPlaceholderText('Enter your password'), 'Esunadmin');
         await user.click(screen.getByRole('button', { name: /sign in/i }));
 
         await waitFor(() => {
@@ -48,8 +48,8 @@ describe('LoginPage', () => {
         const user = userEvent.setup();
         renderLogin();
 
-        await user.type(screen.getByPlaceholderText('Username'), 'bad');
-        await user.type(screen.getByPlaceholderText('Password'), 'bad');
+        await user.type(screen.getByPlaceholderText('Enter your username'), 'bad');
+        await user.type(screen.getByPlaceholderText('Enter your password'), 'bad');
         await user.click(screen.getByRole('button', { name: /sign in/i }));
 
         await waitFor(() => {
@@ -63,8 +63,8 @@ describe('LoginPage', () => {
         const user = userEvent.setup();
         renderLogin();
 
-        await user.type(screen.getByPlaceholderText('Username'), 'Esun');
-        await user.type(screen.getByPlaceholderText('Password'), 'Esunadmin');
+        await user.type(screen.getByPlaceholderText('Enter your username'), 'Esun');
+        await user.type(screen.getByPlaceholderText('Enter your password'), 'Esunadmin');
         await user.click(screen.getByRole('button', { name: /sign in/i }));
 
         expect(screen.getByRole('button')).toBeDisabled();

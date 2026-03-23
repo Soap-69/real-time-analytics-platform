@@ -6,29 +6,34 @@ export default function SettingsPage() {
     const [apiBase, setApiBase] = useState(import.meta.env.VITE_API_BASE);
 
     return (
-        <div className="space-y-6">
-            <h2 className="text-lg font-semibold">Settings</h2>
-
-            <div className="rounded-xl border border-rtap-border bg-slate-950/60 p-4 space-y-4">
+        <div className="space-y-6 max-w-lg">
+            <div className="rounded-xl border border-rtap-border bg-white shadow-card p-6 space-y-5">
 
                 {/* Dark mode toggle */}
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-300">Dark Mode</span>
+                    <div>
+                        <div className="text-sm font-medium text-gray-700">Theme</div>
+                        <div className="text-xs text-gray-400">Toggle light / dark mode</div>
+                    </div>
                     <button
                         onClick={() => setDarkMode(!darkMode)}
-                        className={`px-4 py-1 rounded-full text-xs ${
-                            darkMode ? "bg-rtap-accent" : "bg-slate-700"
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                            darkMode
+                                ? "bg-rtap-accent text-white"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                     >
-                        {darkMode ? "Enabled" : "Disabled"}
+                        {darkMode ? "Dark" : "Light"}
                     </button>
                 </div>
 
+                <div className="border-t border-rtap-border" />
+
                 {/* API base URL */}
-                <div className="space-y-1">
-                    <label className="text-xs text-slate-400">API Base URL</label>
+                <div className="space-y-1.5">
+                    <label className="block text-xs font-medium text-gray-500">API Base URL</label>
                     <input
-                        className="w-full rounded-md border border-rtap-border bg-slate-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-rtap-border bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rtap-accent/30 focus:border-rtap-accent"
                         value={apiBase}
                         onChange={(e) => setApiBase(e.target.value)}
                     />

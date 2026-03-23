@@ -4,15 +4,16 @@ export default {
         "./index.html",
         "./src/**/*.{js,jsx,ts,tsx}",
     ],
-    darkMode: "class",
     theme: {
         extend: {
             colors: {
-                // keep your dark theme vibes
-                "rtap-bg": "#020617",        // slate-950-ish
-                "rtap-panel": "#020617",
-                "rtap-border": "#1f2937",
-                "rtap-accent": "#6366f1",
+                "rtap-bg":     "#f8fafc",   // page background (slate-50)
+                "rtap-panel":  "#ffffff",   // card / panel
+                "rtap-border": "#e2e8f0",   // border (slate-200)
+                "rtap-accent": "#4f46e5",   // indigo-600
+            },
+            boxShadow: {
+                card: "0 1px 3px 0 rgb(0 0 0 / .06), 0 1px 2px -1px rgb(0 0 0 / .06)",
             },
         },
     },

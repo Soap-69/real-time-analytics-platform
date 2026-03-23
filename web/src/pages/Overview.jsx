@@ -59,36 +59,30 @@ export default function OverviewPage() {
     return (
         <div className="space-y-6">
             {/* Filters */}
-            <section className="flex flex-col md:flex-row gap-4 md:items-end">
-                {/* Metric selector */}
+            <section className="bg-white rounded-xl border border-rtap-border shadow-card p-4 flex flex-col md:flex-row gap-4 md:items-end">
                 <div className="flex-1 max-w-xs">
-                    <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Metric
-                    </label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Metric</label>
                     <select
-                        className="w-full rounded-md border border-rtap-border bg-slate-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-rtap-border bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rtap-accent/30 focus:border-rtap-accent"
                         value={metric}
                         onChange={(e) => setMetric(e.target.value)}
                     >
                         {METRICS.map((m) => (
-                            <option key={m.id} value={m.id}>
-                                {m.label}
-                            </option>
+                            <option key={m.id} value={m.id}>{m.label}</option>
                         ))}
                     </select>
                 </div>
 
-                {/* From / To */}
                 <div className="flex-1 flex flex-col md:flex-row gap-4">
                     <DateField label="From" value={fromDate} onChange={setFromDate} />
-                    <DateField label="To" value={toDate} onChange={setToDate} />
+                    <DateField label="To"   value={toDate}   onChange={setToDate} />
                 </div>
 
-                {/* Apply */}
                 <div className="md:ml-auto">
                     <button
                         onClick={() => load()}
-                        className="inline-flex items-center justify-center rounded-md bg-rtap-accent px-4 py-2 text-sm font-medium hover:bg-indigo-500"
+                        disabled={loading}
+                        className="inline-flex items-center justify-center rounded-lg bg-rtap-accent px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
                     >
                         {loading ? "Loading…" : "Apply filters"}
                     </button>
@@ -97,17 +91,17 @@ export default function OverviewPage() {
 
             {/* Error */}
             {error && (
-                <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                     {error}
                 </div>
             )}
 
             {/* Summary Cards */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <SummaryCard title="Metric" value={metric} />
-                <SummaryCard title="Range" value={`${fromDate} → ${toDate}`} />
+                <SummaryCard title="Metric"     value={metric} />
+                <SummaryCard title="Date range" value={`${fromDate} → ${toDate}`} />
                 <SummaryCard
-                    title="Days Count"
+                    title="Data points"
                     value={daysCount}
                     hint={daysCount === 0 ? "No data in selected range" : null}
                 />
@@ -116,41 +110,43 @@ export default function OverviewPage() {
             {/* Chart + Table */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 {/* Chart */}
-                <div className="lg:col-span-2 rounded-xl border border-rtap-border bg-slate-950/60 p-4">
-                    <h2 className="text-sm font-semibold mb-3">
+                <div className="lg:col-span-2 rounded-xl border border-rtap-border bg-white shadow-card p-5">
+                    <h2 className="text-sm font-semibold text-gray-700 mb-4">
                         {METRICS.find((m) => m.id === metric)?.label}
                     </h2>
 
                     <div className="h-64">
                         {loading ? (
-                            <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                            <div className="flex h-full items-center justify-center text-sm text-gray-400">
                                 Loading…
                             </div>
                         ) : data.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 space-y-1">
-                                <div className="text-sm font-medium">No data for selected date range</div>
-                                <div className="text-xs text-slate-500">
-                                    Try selecting a date range with ingested events
-                                </div>
+                            <div className="h-full flex flex-col items-center justify-center text-center space-y-1">
+                                <div className="text-sm font-medium text-gray-500">No data for selected date range</div>
+                                <div className="text-xs text-gray-400">Try selecting a range with ingested events</div>
                             </div>
                         ) : (
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={data}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9ca3af" }} />
-                                    <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} width={60} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                                    <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} width={50} />
                                     <Tooltip
                                         contentStyle={{
-                                            backgroundColor: "#020617",
-                                            border: "1px solid #1f2937",
+                                            backgroundColor: "#ffffff",
+                                            border: "1px solid #e2e8f0",
+                                            borderRadius: "8px",
+                                            fontSize: "12px",
+                                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / .07)",
                                         }}
                                     />
                                     <Line
                                         type="monotone"
                                         dataKey="value"
-                                        stroke="#6366f1"
+                                        stroke="#4f46e5"
                                         strokeWidth={2}
-                                        dot={{ r: 3 }}
+                                        dot={{ r: 3, fill: "#4f46e5" }}
+                                        activeDot={{ r: 5 }}
                                     />
                                 </LineChart>
                             </ResponsiveContainer>
@@ -159,22 +155,20 @@ export default function OverviewPage() {
                 </div>
 
                 {/* Table */}
-                <div className="rounded-xl border border-rtap-border bg-slate-950/60 p-4">
-                    <h2 className="text-sm font-semibold mb-3">Daily values ({metric})</h2>
+                <div className="rounded-xl border border-rtap-border bg-white shadow-card p-5">
+                    <h2 className="text-sm font-semibold text-gray-700 mb-4">Daily values — {metric}</h2>
                     <table className="min-w-full border-collapse text-xs">
-                        <thead className="bg-slate-900/80">
-                        <tr>
-                            <th className="px-3 py-2 border-b border-rtap-border text-left">Date</th>
-                            <th className="px-3 py-2 border-b border-rtap-border text-right">Value</th>
+                        <thead>
+                        <tr className="border-b border-rtap-border">
+                            <th className="pb-2 text-left font-medium text-gray-400 uppercase tracking-wide">Date</th>
+                            <th className="pb-2 text-right font-medium text-gray-400 uppercase tracking-wide">Value</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-rtap-border">
                         {data.map((row) => (
-                            <tr key={row.date} className="odd:bg-slate-900/40">
-                                <td className="px-3 py-2 border-b border-rtap-border/60">{row.date}</td>
-                                <td className="px-3 py-2 border-b border-rtap-border/60 text-right">
-                                    {row.value}
-                                </td>
+                            <tr key={row.date} className="hover:bg-gray-50 transition-colors">
+                                <td className="py-2 text-gray-600">{row.date}</td>
+                                <td className="py-2 text-right font-medium text-gray-900">{row.value}</td>
                             </tr>
                         ))}
                         </tbody>
