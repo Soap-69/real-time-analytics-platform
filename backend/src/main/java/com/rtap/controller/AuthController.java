@@ -22,7 +22,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginReq body) {
         // demo-only authentication
-        if ("demo".equals(body.username()) && "demo123".equals(body.password())) {
+        if ("Esun".equals(body.username()) && "Esunadmin".equals(body.password())) {
             String token = jwt.generate(body.username());
             return ResponseEntity.ok(Map.of("token", token));
         }

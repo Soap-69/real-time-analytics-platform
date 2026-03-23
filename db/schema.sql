@@ -17,3 +17,16 @@ create table if not exists metrics_daily (
   metric_value numeric not null,
   primary key (metric_date, metric_name)
 );
+
+-- ===============================
+-- USERS TABLE (AUTH)
+-- ===============================
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'USER'
+);
+
+-- Default admin user is seeded at application startup by DataInitializer.java
+-- No plaintext credentials stored here.

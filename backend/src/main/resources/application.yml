@@ -38,5 +38,5 @@ management:
             requests: true
 rtap:
   jwt:
-    secret: dev-super-secret-change-me-32-plus
-    ttlSeconds: 86400
+    secret: ${RTAP_JWT_SECRET}
+    ttlSeconds: ${RTAP_JWT_TTL_SECONDS:86400}

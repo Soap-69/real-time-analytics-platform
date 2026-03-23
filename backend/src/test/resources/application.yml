@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true   # run SQL scripts AFTER Hibernate creates entity tables
+  sql:
+    init:
+      mode: always                          # run schema.sql from test/resources
+  cache:
+    type: none                              # disable Redis cache for tests
+
+rtap:
+  jwt:
+    secret: test-secret-value-that-is-long-enough-32
+    ttlSeconds: 3600

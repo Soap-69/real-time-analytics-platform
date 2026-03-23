@@ -1,32 +1,138 @@
-# 🚀 Real-Time Event Analytics Platform (RTAP)
-Minimal starter to get the stack running: Postgres, Redis, Spring Boot backend, and a tiny Python pipeline.
+# Real-Time Analytics Platform (RTAP)
 
-# 📸 Dashboard UI Preview
+![CI](https://github.com/YOUR_USERNAME/real-time-analytics-platform/actions/workflows/ci.yml/badge.svg)
+
+A full-stack analytics platform that ingests events in real time, runs a Python ETL pipeline to compute daily metrics, and visualises them on a live dashboard. Built to demonstrate end-to-end engineering across backend, frontend, data pipeline, and observability.
+
+## Dashboard
+
 ![RTAP Dashboard UI](./docs/ui-overview.png)
 
-## Prereqs
+---
+
+## Architecture
+
+```
+Browser
+  └── React 19 + Tailwind (Nginx :3000)
+        └── /api/* proxy
+              └── Spring Boot :8080  (REST, JWT auth, Redis rate-limit)
+                    └── PostgreSQL :5432  ◄── Python ETL pipeline (every 30 s)
+                                                  └── Prometheus metrics :9100
+Prometheus :9090 ──scrapes──► backend :8080/actuator/prometheus
+                              pipeline :9100
+Grafana :3001 ──queries──► Prometheus
+```
+
+### Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Vite, Tailwind CSS, Recharts |
+| Backend | Java 21, Spring Boot 3.3, Spring Security, JWT, Redis |
+| Database | PostgreSQL 16 |
+| ETL pipeline | Python 3.11, psycopg2 |
+| Observability | Micrometer, Prometheus, Grafana |
+| Load testing | k6 |
+| CI/CD | GitHub Actions, Docker, GHCR |
+
+---
+
+## Quickstart
+
+### Prerequisites
 - Docker Desktop (Windows/Mac) or Docker Engine (Linux)
 - Git
 
-## Quickstart(Windows_friendly)
+### 1. Clone and configure
+
 ```bash
-# fresh start
-docker compose down -v
-docker compose up -d --build
+git clone https://github.com/YOUR_USERNAME/real-time-analytics-platform.git
+cd real-time-analytics-platform
+cp .env.example .env
+# Edit .env — set RTAP_JWT_SECRET to any 32+ character string
+```
 
-# health
-curl http://localhost:8080/api/v1/health
+### 2. Start all services
 
-# login to get JWT
-curl -X POST http://localhost:8080/api/v1/auth/login -H "Content-Type: application/json" \
-  -d "{\"username\":\"demo\",\"password\":\"demo123\"}"
+```bash
+docker compose up --build
+```
+
+| URL | Service |
+|---|---|
+| http://localhost:3000 | Dashboard (login: `Esun` / `Esunadmin`) |
+| http://localhost:8080/api/v1/health | Backend health |
+| http://localhost:3001 | Grafana (admin / admin) |
+| http://localhost:9090 | Prometheus |
+
+### Environment variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `RTAP_JWT_SECRET` | Yes | — | JWT signing secret (min 32 chars) |
+| `RTAP_JWT_TTL_SECONDS` | No | `86400` | Token TTL in seconds |
+| `GRAFANA_PASSWORD` | No | `admin` | Grafana admin password |
+
+---
+
+## Development
+
+```bash
+# Backend
+cd backend && mvn spring-boot:run
+
+# Frontend
+cd web && npm install && npm run dev   # http://localhost:5173
+
+# Pipeline
+cd pipeline && pip install -r requirements.txt && python -m app.main
+```
+
+---
+
+## Testing
+
+```bash
+# Backend — unit + integration tests (Testcontainers requires Docker)
+cd backend && mvn verify
+
+# Frontend
+cd web && npm test
+
+# Python pipeline
+cd pipeline && python -m pytest tests/ -v
+```
+
+---
+
+## API
+
+Full spec: [`backend/src/main/resources/openapi.yaml`](backend/src/main/resources/openapi.yaml)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/auth/login` | — | Get a JWT |
+| `POST` | `/api/v1/events` | JWT | Ingest an event |
+| `GET` | `/api/v1/events?page=0&size=50` | JWT | List events (paginated) |
+| `GET` | `/api/v1/metrics/daily?name=DAU&from=…&to=…` | — | Daily metric series |
+
+---
+
+## Project structure
 
 ```
-Then test:
-- Backend health: http://localhost:8080/api/v1/health → `{"status":"UP"}`
-- Postgres: connect on `localhost:5432` (postgres/postgres)
-- Redis: `localhost:6379`
-- Pipeline logs: `docker compose logs -f pipeline`
+.
+├── backend/          Java 21 / Spring Boot — REST API, JWT, rate limiting
+├── web/              React 19 / Vite / Tailwind — dashboard SPA
+├── pipeline/         Python ETL — events_raw → metrics_daily (every 30 s)
+├── db/               schema.sql
+├── monitoring/       Prometheus + Grafana provisioning
+├── load/             k6 load test script
+└── docker-compose.yml
+```
+
+---
 
 ## 📊– Load & Performance Validation
 

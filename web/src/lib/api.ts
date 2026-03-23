@@ -1,8 +1,8 @@
 // src/lib/api.ts
 
-// Base URL (from env or fallback)
-const API_BASE: string =
-    import.meta.env.VITE_API_BASE || "http://localhost:8080";
+// IMPORTANT:
+// Use relative API path so Nginx can proxy to backend
+const API_BASE = "/api";
 
 export interface MetricRow {
     metricDate?: string;
@@ -22,16 +22,24 @@ export interface DailyMetric {
     value: number;
 }
 
-/**
- * Fetch daily metrics from backend.
- * Backend endpoint: GET /api/v1/metrics/daily?name=...&from=YYYY-MM-DD&to=YYYY-MM-DD
- */
-export async function fetchDailyMetrics(name: string, from: string, to: string) {
-    const url = `${API_BASE}/api/v1/metrics/daily?name=${encodeURIComponent(
+/* -------------------------
+   Metrics
+-------------------------- */
+export async function fetchDailyMetrics(
+    name: string,
+    from: string,
+    to: string
+): Promise<DailyMetric[]> {
+    const url = `${API_BASE}/v1/metrics/daily?name=${encodeURIComponent(
         name
     )}&from=${from}&to=${to}`;
 
-    const res = await fetch(url);
+    const res = await fetch(url, {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+    });
 
     if (!res.ok) {
         const text = await res.text();
@@ -45,18 +53,41 @@ export async function fetchDailyMetrics(name: string, from: string, to: string) 
     // CASE 1: backend returns array directly
     if (Array.isArray(json)) {
         return json.map((row: MetricRow) => ({
-            date: row.metricDate ?? row.date,
-            value: row.metricValue ?? row.value,
+            date: row.metricDate ?? row.date ?? "",
+            value: row.metricValue ?? row.value ?? 0,
         }));
     }
 
     // CASE 2: backend returns object with "points"
     if (json.points && Array.isArray(json.points)) {
         return json.points.map((row: MetricRow) => ({
-            date: row.metricDate ?? row.date,
-            value: row.metricValue ?? row.value,
+            date: row.metricDate ?? row.date ?? "",
+            value: row.metricValue ?? row.value ?? 0,
         }));
     }
 
     return [];
+}
+
+/* -------------------------
+   Auth
+-------------------------- */
+export async function login(
+    username: string,
+    password: string
+): Promise<{ token: string }> {
+    const res = await fetch(`${API_BASE}/v1/auth/login`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+    });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Login failed: ${text}`);
+    }
+
+    return res.json();
 }

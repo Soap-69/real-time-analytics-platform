@@ -1,16 +1,40 @@
-# React + Vite
+# RTAP Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 dashboard for the Real-Time Analytics Platform. Built with Vite, Tailwind CSS, and Recharts.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 19** with React Router 7
+- **Vite 7** — dev server and build
+- **Tailwind CSS 3** — styling
+- **Recharts** — line charts
+- **TypeScript** — `api.ts`, `auth.ts`
+- **Vitest + React Testing Library** — unit tests
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev        # Vite dev server on http://localhost:5173
+```
 
-## Expanding the ESLint configuration
+The dev server proxies `/api/*` to `http://localhost:8080` (Spring Boot). Make sure the backend is running first.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Commands
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | ESLint |
+| `npm test` | Run Vitest tests once |
+| `npm run test:watch` | Run Vitest in watch mode |
+
+## Environment
+
+| Variable | Description |
+|---|---|
+| `VITE_API_BASE` | Backend base URL (only needed for non-proxied builds) |
+
+In Docker, the Nginx config proxies `/api/` to the backend — no build-time env var needed.
